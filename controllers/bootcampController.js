@@ -3,11 +3,20 @@ const Bootcamp = require('./../models/bootcampModel');
 // description: GET all bootcamps
 // route:       GET /api/v1/bootcamps
 // access       Public
-const getAllBootcamps = (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'get all bootcamps',
-  });
+const getAllBootcamps = async (req, res) => {
+  try {
+    const bootcamps = await Bootcamp.find();
+    res.status(200).json({
+      success: true,
+      result: bootcamps.length,
+      data: { bootcamps },
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      error: err,
+    });
+  }
 };
 
 // description: GET all bootcamps
@@ -24,12 +33,19 @@ const getSingleBootcamp = (req, res) => {
 // route:       POST /api/v1/bootcamps
 // access       Private
 const createBootcamp = async (req, res) => {
-  const bootcamp = await Bootcamp.create(req.body);
+  try {
+    const bootcamp = await Bootcamp.create(req.body);
 
-  res.status(201).json({
-    success: true,
-    data: { bootcamp },
-  });
+    res.status(201).json({
+      success: true,
+      data: { bootcamp },
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      error: err,
+    });
+  }
 };
 
 // description: Update  bootcamp
