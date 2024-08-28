@@ -23,10 +23,12 @@ const getSingleBootcamp = (req, res) => {
 // description: Create new bootcamp
 // route:       POST /api/v1/bootcamps
 // access       Private
-const createBootcamp = (req, res) => {
+const createBootcamp = async (req, res) => {
+  const bootcamp = await Bootcamp.create(req.body);
+
   res.status(201).json({
     success: true,
-    message: 'Create Bootcamp',
+    data: { bootcamp },
   });
 };
 
