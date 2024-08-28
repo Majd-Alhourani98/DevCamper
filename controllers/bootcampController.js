@@ -60,10 +60,22 @@ const createBootcamp = async (req, res) => {
 // description: Update  bootcamp
 // route:       PUT /api/v1/bootcamps/:id
 // access       Private
-const updateBootcamp = (req, res) => {
+const updateBootcamp = async (req, res) => {
+  const { id } = req.params;
+  const bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+  });
+
+  if (!bootcamp)
+    return res.status(404).json({
+      status: false,
+      message: `there is no bootcamp with the id ${id}`,
+    });
+
   res.status(201).json({
     success: true,
-    message: 'Update Bootcamp',
+    data: { bootcamp },
   });
 };
 
