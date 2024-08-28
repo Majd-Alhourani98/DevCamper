@@ -1,0 +1,19 @@
+{
+  "name": "devcamper",
+  "version": "1.0.0",
+  "description": "Backend API for DevCamper application, which is a bootcamp directory website",
+  "main": "app",
+  "scripts": {
+    "start": "node server",
+    "dev": "nodemon server"
+  },
+  "author": "Majd Aldein Alhourani",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}
