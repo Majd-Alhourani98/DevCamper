@@ -16,6 +16,9 @@ const bootcampRouter = require('./routes/bootcampRouter');
 // Create express application
 const app = express();
 
+// Parse JSON body
+app.use(express.json());
+
 // Development Logging middleware
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('tiny'));
