@@ -23,7 +23,10 @@ const getSingleBootcamp = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const bootcamp = await Bootcamp.findById(id);
 
-  if (!bootcamp) return next(new appError(`Bootcamp not found with id of ${req.params.id}`, 404));
+  if (!bootcamp)
+    return next(
+      new appError(`Bootcamp not found with id of ${req.params.id}`, 404)
+    );
 
   res.status(200).json({
     success: true,
@@ -53,7 +56,10 @@ const updateBootcamp = catchAsync(async (req, res, next) => {
     runValidators: true,
   });
 
-  if (!bootcamp) return next(new appError(`Bootcamp not found with id of ${req.params.id}`, 404));
+  if (!bootcamp)
+    return next(
+      new appError(`Bootcamp not found with id of ${req.params.id}`, 404)
+    );
 
   res.status(201).json({
     success: true,
@@ -68,7 +74,10 @@ const deleteBootcamp = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const bootcamp = await Bootcamp.findByIdAndDelete(id);
 
-  if (!bootcamp) return next(new appError(`Bootcamp not found with id of ${req.params.id}`, 404));
+  if (!bootcamp)
+    return next(
+      new appError(`Bootcamp not found with id of ${req.params.id}`, 404)
+    );
 
   res.status(204).json({
     success: true,
