@@ -13,7 +13,7 @@ const getAllBootcamps = catchAsync(async (req, res, next) => {
 
   // Fields to exclude
   let queryObject = { ...req.query };
-  const excludedFiels = ['select', 'page', 'sort'];
+  const excludedFiels = ['select', 'page', 'sort', 'limit'];
   excludedFiels.forEach(field => delete queryObject[field]);
 
   // create operator ($gt, $gte, etc)
@@ -24,24 +24,53 @@ const getAllBootcamps = catchAsync(async (req, res, next) => {
   // setup the query
   let query = Bootcamp.find(JSON.parse(queryStr));
 
-  // Select Fields
+  // 2) Select Fields
   if (req.query.select) {
     const fields = req.query.select.split(',').join(' ');
     query = query.select(fields);
   }
 
-  // Sorting
+  // 3)  Sorting
   if (req.query.sort) {
     const sortBy = req.query.sort.split(',').join(' ');
     query = query.sort(sortBy);
   } else {
-    query = query.sort('-createdAt');
+    // query = query.sort('-createdAt');
   }
+
+  // 4) Pagination
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+  const startIndex = (page - 1) * limit;
+  const endIndex = page * limit;
+
+  // get the total amount of documents
+  const totalDocs = await Bootcamp.countDocuments();
+  const pagination = {};
+
+  // previous 1 2 3 4 5 6 ... next
+  // we calcualte the next
+  if (endIndex < totalDocs) {
+    pagination.next = {
+      page: page + 1,
+      limit,
+    };
+  }
+
+  // we calcualte the previous
+  if (startIndex > 0) {
+    pagination.prev = {
+      page: page - 1,
+    };
+  }
+
+  query = query.skip(startIndex).limit(limit);
 
   const bootcamps = await Bootcamp.find(query);
   res.status(200).json({
     success: true,
     result: bootcamps.length,
+    pagination,
     data: { bootcamps },
   });
 });
@@ -49,7 +78,6 @@ const getAllBootcamps = catchAsync(async (req, res, next) => {
 // description: GET all bootcamps
 // route:       GET /api/v1/bootcamps/:id
 // access       Public
-
 const getSingleBootcamp = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const bootcamp = await Bootcamp.findById(id);
@@ -153,5 +181,4 @@ module.exports = {
 };
 
 // Filtering Notes:
-
 // search inside an object "location.city=Boston" in the Url

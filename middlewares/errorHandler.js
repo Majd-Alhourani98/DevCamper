@@ -12,7 +12,9 @@ const errorHandler = (err, req, res, next) => {
 
   // Mongoose Duplicate Key Error
   if (err.code === 11000) {
-    const message = `Duplicate field value: ${Object.values(error.keyValue)[0]}`;
+    const message = `Duplicate field value: ${
+      Object.values(error.keyValue)[0]
+    }`;
     error = new appError(message, 400);
   }
 
