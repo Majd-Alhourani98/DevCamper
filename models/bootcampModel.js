@@ -170,6 +170,19 @@ bootcampSchema.virtual('courses', {
   foreignField: 'bootcamp',
 });
 
+// Cascade delete course when a bootcamp is deleted
+bootcampSchema.pre('findOneAndDelete', async function (next) {
+  // Delete related courses
+
+  // get the bootcamp id from the query
+  const id = this.getQuery()._id;
+
+  // you can import and use Course Model instead of "mongoose.model('Course');"
+  await mongoose.model('Course').deleteMany({ bootcamp: id });
+
+  next();
+});
+
 module.exports = mongoose.model('Bootcamp', bootcampSchema);
 
 // https://developer.mapquest.com/
