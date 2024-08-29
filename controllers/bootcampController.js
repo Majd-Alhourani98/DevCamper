@@ -82,10 +82,13 @@ const updateBootcamp = async (req, res) => {
 // description: Delete bootcamp
 // route:       DELETE /api/v1/bootcamps/:id
 // access       Private
-const deleteBootcamp = (req, res) => {
+const deleteBootcamp = async (req, res) => {
+  const { id } = req.params;
+  const bootcamp = await Bootcamp.findByIdAndDelete(id);
+
   res.status(204).json({
     success: true,
-    message: 'delete Bootcamp',
+    data: null,
   });
 };
 
