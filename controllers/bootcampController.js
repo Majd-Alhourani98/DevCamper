@@ -9,7 +9,15 @@ const geocoder = require('./../utils/geocoder');
 // route:       GET /api/v1/bootcamps
 // access       Public
 const getAllBootcamps = catchAsync(async (req, res, next) => {
-  const bootcamps = await Bootcamp.find();
+  // 1) Filtering
+
+  let queryStr = { ...req.query };
+  queryStr = JSON.stringify(queryStr);
+  queryStr = queryStr.replace(/\b(lte|lt|gte|gt|in)\b/g, match => `$${match}`);
+
+  let query = Bootcamp.find(JSON.parse(queryStr));
+
+  const bootcamps = await Bootcamp.find(query);
   res.status(200).json({
     success: true,
     result: bootcamps.length,
@@ -25,7 +33,10 @@ const getSingleBootcamp = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const bootcamp = await Bootcamp.findById(id);
 
-  if (!bootcamp) return next(new appError(`Bootcamp not found with id of ${req.params.id}`, 404));
+  if (!bootcamp)
+    return next(
+      new appError(`Bootcamp not found with id of ${req.params.id}`, 404)
+    );
 
   res.status(200).json({
     success: true,
@@ -55,7 +66,10 @@ const updateBootcamp = catchAsync(async (req, res, next) => {
     runValidators: true,
   });
 
-  if (!bootcamp) return next(new appError(`Bootcamp not found with id of ${req.params.id}`, 404));
+  if (!bootcamp)
+    return next(
+      new appError(`Bootcamp not found with id of ${req.params.id}`, 404)
+    );
 
   res.status(201).json({
     success: true,
@@ -70,7 +84,10 @@ const deleteBootcamp = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const bootcamp = await Bootcamp.findByIdAndDelete(id);
 
-  if (!bootcamp) return next(new appError(`Bootcamp not found with id of ${req.params.id}`, 404));
+  if (!bootcamp)
+    return next(
+      new appError(`Bootcamp not found with id of ${req.params.id}`, 404)
+    );
 
   res.status(204).json({
     success: true,
@@ -83,7 +100,7 @@ const deleteBootcamp = catchAsync(async (req, res, next) => {
 // access       public
 const getBootcampInRadius = catchAsync(async (req, res, next) => {
   const { zipcode, distance } = req.params;
-
+  console.log(zipcode, distance);
   // Get lat/lng from geocoder
   const loc = await geocoder.geocode(zipcode);
   const lat = loc[0].latitude;
@@ -113,3 +130,7 @@ module.exports = {
   deleteBootcamp,
   getBootcampInRadius,
 };
+
+// Filtering Notes:
+
+// search inside an object "location.city=Boston" in the Url
