@@ -16,20 +16,16 @@ const errorHandler = (err, req, res, next) => {
     error = new appError(message, 400);
   }
 
-  console.log(err);
-  if (process.env.NODE_ENV === 'development') {
-    res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.message || 'Server Error',
-      error: error,
-      stack: error.stack,
-    });
-  } else {
-    res.status(error.statusCode || 500).json({
-      success: false,
-      error: error.message || 'Server Error',
-    });
+  // Mongoose Validation Error
+  if (err.name === 'ValidationError') {
+    const message = Object.values(err.errors).map(val => val.message);
+    error = new appError(message, 400);
   }
+
+  res.status(error.statusCode || 500).json({
+    success: false,
+    error: error.message || 'Server Error',
+  });
 };
 
 module.exports = errorHandler;
@@ -37,3 +33,4 @@ module.exports = errorHandler;
 // Mongoose Error
 // 1. CastError ==> IDs
 // 2. Duplicate keys ==> code 11000
+// 3. Validation Error
