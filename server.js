@@ -43,3 +43,4 @@ process.on('unhandledRejection', err => {
 });
 
 // 1. Create Error handler express middleware to pass error via the next function
+// 2. Create a class to build an error object from it
