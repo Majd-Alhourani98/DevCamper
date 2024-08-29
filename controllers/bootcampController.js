@@ -20,9 +20,10 @@ const getAllBootcamps = catchAsync(async (req, res, next) => {
   let queryStr = queryObject;
   queryStr = JSON.stringify(queryStr);
   queryStr = queryStr.replace(/\b(lte|lt|gte|gt|in)\b/g, match => `$${match}`);
+  const filter = JSON.parse(queryStr);
 
   // setup the query
-  let query = Bootcamp.find(JSON.parse(queryStr));
+  let query = Bootcamp.find(filter).populate('courses');
 
   // 2) Select Fields
   if (req.query.select) {

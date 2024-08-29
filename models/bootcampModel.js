@@ -157,6 +157,19 @@ bootcampSchema.pre('save', async function (next) {
   next();
 });
 
+// Reverse populate with virtuals: this to work you have to include the following in the schema:
+// toJSON: { virtuals: true },
+// toObject: { virtuals: true },
+
+// justOne: true,  // this will return just one document as an object. by default it is false, so we will retrive an array of courses.
+
+// to get the courses you should use .populate('courses')
+bootcampSchema.virtual('courses', {
+  ref: 'Course',
+  localField: '_id',
+  foreignField: 'bootcamp',
+});
+
 module.exports = mongoose.model('Bootcamp', bootcampSchema);
 
 // https://developer.mapquest.com/
