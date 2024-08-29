@@ -1,7 +1,4 @@
-const catchAsync = handler => {
-  return (req, res, next) => {
-    handler(req, res, next).catch(err => next(err));
-  };
-};
+const catchAsync = handler => (req, res, next) =>
+  handler(req, res, next).catch(next);
 
 module.exports = catchAsync;

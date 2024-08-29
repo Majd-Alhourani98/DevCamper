@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const slugify = require('slugify');
 
 const bootcampSchema = new mongoose.Schema(
   {
@@ -34,7 +35,10 @@ const bootcampSchema = new mongoose.Schema(
 
     email: {
       type: String,
-      match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please add a valid email'],
+      match: [
+        /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+        'Please add a valid email',
+      ],
     },
 
     address: {
@@ -66,7 +70,14 @@ const bootcampSchema = new mongoose.Schema(
       // Array of strings
       type: [String],
       required: true,
-      enum: ['Web Development', 'Mobile Development', 'UI/UX', 'Data Science', 'Business', 'Other'],
+      enum: [
+        'Web Development',
+        'Mobile Development',
+        'UI/UX',
+        'Data Science',
+        'Business',
+        'Other',
+      ],
     },
 
     averageRating: {
@@ -112,5 +123,14 @@ const bootcampSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
+
+// Create slugify
+bootcampSchema.pre('save', function (next) {
+  this.slug = slugify(this.name, {
+    replacement: '-',
+    lower: true,
+  });
+  next();
+});
 
 module.exports = mongoose.model('Bootcamp', bootcampSchema);
