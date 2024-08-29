@@ -18,11 +18,6 @@ const bootcampSchema = new mongoose.Schema(
       maxLength: [500, 'Description can not be more 50 characters'],
     },
 
-    website: {
-      type: String,
-      match: [],
-    },
-
     // Website for the bootcamp
     website: {
       type: String,

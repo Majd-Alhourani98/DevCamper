@@ -22,20 +22,24 @@ const getAllBootcamps = async (req, res) => {
 // description: GET all bootcamps
 // route:       GET /api/v1/bootcamps/:id
 // access       Public
-const getSingleBootcamp = async (req, res) => {
-  const { id } = req.params;
-  const bootcamp = await Bootcamp.findById(id);
+const getSingleBootcamp = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const bootcamp = await Bootcamp.findById(id);
 
-  if (!bootcamp)
-    return res.status(404).json({
-      status: false,
-      message: `there is no bootcamp with the id ${id}`,
+    if (!bootcamp)
+      return res.status(404).json({
+        status: false,
+        message: `there is no bootcamp with the id ${id}`,
+      });
+
+    res.status(200).json({
+      success: true,
+      data: { bootcamp },
     });
-
-  res.status(200).json({
-    success: true,
-    data: { bootcamp },
-  });
+  } catch (err) {
+    next(err);
+  }
 };
 
 // description: Create new bootcamp
