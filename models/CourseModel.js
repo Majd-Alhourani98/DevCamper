@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { post } = require('../routes/courseRouter');
 
 const courseSchema = new mongoose.Schema({
   title: {
@@ -45,6 +46,42 @@ const courseSchema = new mongoose.Schema({
   },
 });
 
+// statics method, you should call it on the model Model.methodName
+courseSchema.statics.getAverageCost = async function (bootcampId) {
+  // this refers to the model
+  console.log('calculating avg cost...');
+
+  const stats = await this.aggregate([
+    {
+      $match: { bootcamp: bootcampId },
+    },
+
+    {
+      $group: {
+        _id: '$bootcamp',
+        averageCost: { $avg: '$tuition' },
+      },
+    },
+  ]);
+
+  try {
+    await this.model('Bootcamp').findByIdAndUpdate(bootcampId, {
+      averageCost: Math.ceil(stats[0].averageCost / 10) * 10,
+    });
+  } catch (err) {}
+};
+
+// Call getAverageCost after save
+courseSchema.post('save', function () {
+  this.constructor.getAverageCost(this.bootcamp);
+});
+
+// call getAverageCose before remove
+courseSchema.post('findOneAndDelete', function (doc) {
+  if (doc) this.model.getAverageCost(doc.bootcamp);
+});
+
+courseSchema.post('save', function () {});
 const Course = mongoose.model('Course', courseSchema);
 
 module.exports = Course;

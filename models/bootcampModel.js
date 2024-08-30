@@ -174,14 +174,10 @@ bootcampSchema.virtual('courses', {
 
 // Cascade delete course when a bootcamp is deleted
 bootcampSchema.pre('findOneAndDelete', async function (next) {
-  // Delete related courses
-
-  // get the bootcamp id from the query
-  const id = this.getQuery()._id; // this return the filter object
-
-  // you can import and use Course Model instead of "mongoose.model('Course');"
+  // this point to the current Query
+  const id = this.getQuery()._id; // Get bootcamp ID from the query filter
+  // this._conditions._id
   await mongoose.model('Course').deleteMany({ bootcamp: id });
-
   next();
 });
 
