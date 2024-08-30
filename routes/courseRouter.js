@@ -9,7 +9,20 @@ const {
   deleteCourse,
 } = require('./../controllers/courseController');
 
-router.route('/').get(getAllCourses).post(createCourse);
+const queryBuilder = require('./../middlewares/queryBuilder');
+const Course = require('./../models/CourseModel');
+
+router
+  .route('/')
+  .get(
+    queryBuilder(Course, {
+      path: 'bootcamp', // Populate bootcamp field
+      select: 'name description', // Select fields to display
+    }),
+
+    getAllCourses
+  )
+  .post(createCourse);
 
 router
   .route('/:id')

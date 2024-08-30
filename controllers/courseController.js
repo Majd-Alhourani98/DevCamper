@@ -8,30 +8,19 @@ const catchAsync = require('./../utils/catchAsync'); // Async error handling uti
 // Method: GET /api/v1/courses or /api/v1/bootcamps/:bootcampId/courses
 // Access: Public
 const getAllCourses = catchAsync(async (req, res, next) => {
-  let query;
-
   // Check if bootcampId is provided in the request params
   if (req.params.bootcampId) {
     // Get courses for the specific bootcamp
-    query = Course.find({ bootcamp: req.params.bootcampId });
-  } else {
-    // Get all courses and populate bootcamp information
-    query = Course.find().populate({
-      path: 'bootcamp', // Populate bootcamp field
-      select: 'name description', // Select fields to display
+    const courses = await Course.find({ bootcamp: req.params.bootcampId });
+
+    return res.status(200).json({
+      success: true,
+      result: courses.length,
+      data: { courses },
     });
+  } else {
+    return res.status(200).json(res.response);
   }
-
-  const courses = await query; // Execute the query to get the courses
-
-  // Send response with the fetched courses
-  res.status(200).json({
-    status: true,
-    result: courses.length,
-    data: {
-      courses,
-    },
-  });
 });
 
 // Function to get a single course by ID
@@ -39,10 +28,7 @@ const getAllCourses = catchAsync(async (req, res, next) => {
 // Access: Public
 const getSingleCourse = catchAsync(async (req, res, next) => {
   const { id } = req.params; // Extract course ID from request params
-  const course = await Course.findById(id).populate({
-    path: 'bootcamp', // Populate bootcamp field
-    select: 'name description', // Select fields to display
-  });
+  const course = await Course.findById(id);
 
   // If course not found, return an error
   if (!course)
