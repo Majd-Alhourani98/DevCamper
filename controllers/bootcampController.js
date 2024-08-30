@@ -1,41 +1,41 @@
+// Importing necessary modules and utilities
 const Bootcamp = require('./../models/bootcampModel');
-
 const appError = require('./../utils/appError');
 const catchAsync = require('./../utils/catchAsync');
-
 const geocoder = require('./../utils/geocoder');
 
-// description: GET all bootcamps
-// route:       GET /api/v1/bootcamps
-// access       Public
+// Function to get all bootcamps
+// Method: GET /api/v1/bootcamps
+// Access: Public
 const getAllBootcamps = catchAsync(async (req, res, next) => {
   // 1) Filtering
-
-  // Fields to exclude
+  // Create a copy of the query parameters
   let queryObject = { ...req.query };
-  const excludedFiels = ['select', 'page', 'sort', 'limit'];
-  excludedFiels.forEach(field => delete queryObject[field]);
 
-  // create operator ($gt, $gte, etc)
-  let queryStr = queryObject;
-  queryStr = JSON.stringify(queryStr);
+  // Define fields to exclude from query parameters
+  const excludedFields = ['select', 'page', 'sort', 'limit'];
+  excludedFields.forEach(field => delete queryObject[field]);
+
+  // Convert query operators to MongoDB format
+  let queryStr = JSON.stringify(queryObject);
   queryStr = queryStr.replace(/\b(lte|lt|gte|gt|in)\b/g, match => `$${match}`);
   const filter = JSON.parse(queryStr);
 
-  // setup the query
+  // Build the query with filters
   let query = Bootcamp.find(filter).populate('courses');
 
-  // 2) Select Fields
+  // 2) Selecting specific fields
   if (req.query.select) {
     const fields = req.query.select.split(',').join(' ');
     query = query.select(fields);
   }
 
-  // 3)  Sorting
+  // 3) Sorting
   if (req.query.sort) {
     const sortBy = req.query.sort.split(',').join(' ');
     query = query.sort(sortBy);
   } else {
+    // Default sorting by creation date in descending order
     // query = query.sort('-createdAt');
   }
 
@@ -45,12 +45,11 @@ const getAllBootcamps = catchAsync(async (req, res, next) => {
   const startIndex = (page - 1) * limit;
   const endIndex = page * limit;
 
-  // get the total amount of documents
+  // Calculate total documents in the collection
   const totalDocs = await Bootcamp.countDocuments();
   const pagination = {};
 
-  // previous 1 2 3 4 5 6 ... next
-  // we calcualte the next
+  // Add next page information if applicable
   if (endIndex < totalDocs) {
     pagination.next = {
       page: page + 1,
@@ -58,15 +57,17 @@ const getAllBootcamps = catchAsync(async (req, res, next) => {
     };
   }
 
-  // we calcualte the previous
+  // Add previous page information if applicable
   if (startIndex > 0) {
     pagination.prev = {
       page: page - 1,
     };
   }
 
+  // Apply pagination to the query
   query = query.skip(startIndex).limit(limit);
 
+  // Execute query and get bootcamps
   const bootcamps = await Bootcamp.find(query);
   res.status(200).json({
     success: true,
@@ -76,13 +77,14 @@ const getAllBootcamps = catchAsync(async (req, res, next) => {
   });
 });
 
-// description: GET all bootcamps
-// route:       GET /api/v1/bootcamps/:id
-// access       Public
+// Function to get a single bootcamp by ID
+// Method: GET /api/v1/bootcamps/:id
+// Access: Public
 const getSingleBootcamp = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const bootcamp = await Bootcamp.findById(id);
 
+  // If bootcamp is not found, return error
   if (!bootcamp)
     return next(
       new appError(`Bootcamp not found with id of ${req.params.id}`, 404)
@@ -94,9 +96,9 @@ const getSingleBootcamp = catchAsync(async (req, res, next) => {
   });
 });
 
-// description: Create new bootcamp
-// route:       POST /api/v1/bootcamps
-// access       Private
+// Function to create a new bootcamp
+// Method: POST /api/v1/bootcamps
+// Access: Private
 const createBootcamp = catchAsync(async (req, res, next) => {
   const bootcamp = await Bootcamp.create(req.body);
 
@@ -106,9 +108,9 @@ const createBootcamp = catchAsync(async (req, res, next) => {
   });
 });
 
-// description: Update  bootcamp
-// route:       PUT /api/v1/bootcamps/:id
-// access       Private
+// Function to update an existing bootcamp by ID
+// Method: PUT /api/v1/bootcamps/:id
+// Access: Private
 const updateBootcamp = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, req.body, {
@@ -116,6 +118,7 @@ const updateBootcamp = catchAsync(async (req, res, next) => {
     runValidators: true,
   });
 
+  // If bootcamp is not found, return error
   if (!bootcamp)
     return next(
       new appError(`Bootcamp not found with id of ${req.params.id}`, 404)
@@ -127,13 +130,14 @@ const updateBootcamp = catchAsync(async (req, res, next) => {
   });
 });
 
-// description: Delete bootcamp
-// route:       DELETE /api/v1/bootcamps/:id
-// access       Private
+// Function to delete a bootcamp by ID
+// Method: DELETE /api/v1/bootcamps/:id
+// Access: Private
 const deleteBootcamp = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const bootcamp = await Bootcamp.findByIdAndDelete(id);
 
+  // If bootcamp is not found, return error
   if (!bootcamp)
     return next(
       new appError(`Bootcamp not found with id of ${req.params.id}`, 404)
@@ -145,24 +149,24 @@ const deleteBootcamp = catchAsync(async (req, res, next) => {
   });
 });
 
-// description: Get bootcamps within a radius
-// route:       GET  /api/v1/bootcamps/radius/:zipcode/:distance
-// access       public
+// Function to get bootcamps within a specific radius
+// Method: GET /api/v1/bootcamps/radius/:zipcode/:distance
+// Access: Public
 const getBootcampInRadius = catchAsync(async (req, res, next) => {
   const { zipcode, distance } = req.params;
   console.log(zipcode, distance);
-  // Get lat/lng from geocoder
+
+  // Get latitude and longitude from geocoder
   const loc = await geocoder.geocode(zipcode);
   const lat = loc[0].latitude;
   const lng = loc[0].longitude;
 
-  // calculate radius using radians
-  // divide distance by radius of earth
-  // earth radius = 3,963 mi / 6,378km
-  const radius = distance / 3963;
+  // Calculate radius using radians
+  const radius = distance / 3963; // Radius of Earth in miles
 
+  // Find bootcamps within the radius
   const bootcamps = await Bootcamp.find({
-    location: { $geoWithin: { $centerSphare: [[lng, lat], radius] } },
+    location: { $geoWithin: { $centerSphere: [[lng, lat], radius] } },
   });
 
   res.status(204).json({
@@ -172,6 +176,7 @@ const getBootcampInRadius = catchAsync(async (req, res, next) => {
   });
 });
 
+// Export all bootcamp-related functions
 module.exports = {
   getAllBootcamps,
   getSingleBootcamp,
@@ -181,5 +186,14 @@ module.exports = {
   getBootcampInRadius,
 };
 
-// Filtering Notes:
-// search inside an object "location.city=Boston" in the Url
+// Summary: This file defines a set of CRUD (Create, Read, Update, Delete) operations and additional functionalities
+// for managing bootcamps in a RESTful API. The operations include retrieving all bootcamps with filtering, sorting,
+// and pagination options, fetching a single bootcamp by ID, creating a new bootcamp, updating an existing bootcamp,
+// and deleting a bootcamp. Additionally, it includes a function to find bootcamps within a specific geographic radius
+// based on a provided zipcode and distance.
+
+// Takeaway Note:
+// 1. Use of `catchAsync` for handling asynchronous functions and reducing repetitive try-catch blocks.
+// 2. Use of `appError` utility for consistent error handling across routes.
+// 3. Advanced filtering, sorting, selecting fields, and pagination techniques are implemented using Mongoose queries.
+// 4. Use of geocoding to calculate bootcamps within a certain radius demonstrates integration with third-party APIs.
