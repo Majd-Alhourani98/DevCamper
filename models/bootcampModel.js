@@ -139,6 +139,8 @@ bootcampSchema.pre('save', function (next) {
 
 // Geocode & create location field
 //www.npmjs.com/package/node-geocoder
+
+// use the following website to get an api key: //https://developer.mapquest.com/
 bootcampSchema.pre('save', async function (next) {
   const loc = await geocoder.geocode(this.address);
   this.location = {
@@ -175,7 +177,7 @@ bootcampSchema.pre('findOneAndDelete', async function (next) {
   // Delete related courses
 
   // get the bootcamp id from the query
-  const id = this.getQuery()._id;
+  const id = this.getQuery()._id; // this return the filter object
 
   // you can import and use Course Model instead of "mongoose.model('Course');"
   await mongoose.model('Course').deleteMany({ bootcamp: id });
@@ -184,5 +186,3 @@ bootcampSchema.pre('findOneAndDelete', async function (next) {
 });
 
 module.exports = mongoose.model('Bootcamp', bootcampSchema);
-
-// https://developer.mapquest.com/
