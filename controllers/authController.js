@@ -1,6 +1,8 @@
 const User = require('./../models/userModel');
 const appError = require('./../utils/appError');
 const catchAsync = require('./../utils/catchAsync');
+const jwt = require('jsonwebtoken');
+const { promisify } = require('util');
 
 // Function to register users
 // Method: POST /api/v1/auth/register
@@ -17,12 +19,7 @@ const register = catchAsync(async (req, res, next) => {
   });
 
   // Create Token
-  const token = user.signToken();
-
-  res.status(200).json({
-    success: true,
-    token,
-  });
+  sendTokenResponse(user, 200, res);
 });
 
 // Function to Log in users
@@ -32,8 +29,7 @@ const login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
 
   // validate email & password
-  if (!email || !password)
-    return next(new appError(`Please provide an email and password`, 400));
+  if (!email || !password) return next(new appError(`Please provide an email and password`, 400));
 
   // Check for user
   const user = await User.findOne({ email }).select('+password');
@@ -44,16 +40,48 @@ const login = catchAsync(async (req, res, next) => {
 
   if (!isCorrectPassword) return next(new appError('invalid credentials', 401));
 
+  sendTokenResponse(user, 200, res);
+});
+
+const sendTokenResponse = (user, statusCode, res) => {
   // Create Token
   const token = user.signToken();
 
-  res.status(200).json({
-    success: true,
-    token,
-  });
+  const options = {
+    expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000),
+
+    httpOnly: true,
+  };
+
+  if (process.env.NODE_ENV === 'production') options.secure = true;
+
+  res.status(statusCode).cookie('token', token, options).json({ success: true, token });
+};
+
+// PROTECT ROUTE MIDDLEWARE: you can store it in middlewae folder
+const protect = catchAsync(async (req, res, next) => {
+  let token;
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer'))
+    token = req.headers.authorization.split(' ')[1];
+  else if (req.cookies.token) token = req.cookies.token;
+
+  // check if the token is exists
+  if (!token) return next(new appError('Not authorize to access thie route', 401));
+
+  // verify token
+  try {
+    const docoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
+    req.user = await User.findById(docoded.id);
+    next();
+  } catch (err) {
+    console.log(err);
+    return next(new appError('Not authorize to access thie route', 401));
+  }
 });
 
 module.exports = {
   register,
   login,
+  protect,
 };

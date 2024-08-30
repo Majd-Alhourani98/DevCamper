@@ -9,6 +9,8 @@ const {
   deleteCourse,
 } = require('./../controllers/courseController');
 
+const { protect } = require('../controllers/authController');
+
 const queryBuilder = require('./../middlewares/queryBuilder');
 const Course = require('./../models/CourseModel');
 
@@ -22,12 +24,8 @@ router
 
     getAllCourses
   )
-  .post(createCourse);
+  .post(protect, createCourse);
 
-router
-  .route('/:id')
-  .get(getSingleCourse)
-  .put(updateCourse)
-  .delete(deleteCourse);
+router.route('/:id').get(getSingleCourse).put(updateCourse).delete(deleteCourse);
 
 module.exports = router;

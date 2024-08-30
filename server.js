@@ -1,15 +1,16 @@
 const path = require('path');
 
 const fileUpload = require('express-fileupload');
+const cookieParser = require('cookie-parser');
 const express = require('express');
 const morgan = require('morgan');
 dotenv = require('dotenv');
 
-const connectDB = require('./config/db');
-const errorHandler = require('./middlewares/errorHandler');
-
 // Load Environment variables
 dotenv.config({ path: './config/config.env' });
+
+const connectDB = require('./config/db');
+const errorHandler = require('./middlewares/errorHandler');
 
 // Connect to database
 connectDB();
@@ -24,6 +25,9 @@ const app = express();
 
 // Parse JSON body
 app.use(express.json());
+
+// Cookie parser
+app.use(cookieParser());
 
 // Development Logging middleware
 if (process.env.NODE_ENV === 'development') {
