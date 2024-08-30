@@ -53,6 +53,11 @@ userSchema.methods.signToken = function () {
   });
 };
 
+// Match user entered password to hashed password in database
+userSchema.methods.isCorrectPassword = async function (plainPassword) {
+  return await bcrypt.compare(plainPassword, this.password);
+};
+
 const User = mongoose.model('User', userSchema);
 
 module.exports = User;
