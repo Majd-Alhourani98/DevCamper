@@ -17,6 +17,7 @@ connectDB();
 // Import routers
 const bootcampRouter = require('./routes/bootcampRouter');
 const courseRouter = require('./routes/courseRouter');
+const authRouter = require('./routes/authRouter');
 
 // Create express application
 const app = express();
@@ -38,6 +39,7 @@ app.use(fileUpload());
 // Mount the routers
 app.use('/api/v1/bootcamps', bootcampRouter);
 app.use('/api/v1/courses', courseRouter);
+app.use('/api/v1/auth', authRouter);
 
 // Error handling middleware
 app.use(errorHandler);
