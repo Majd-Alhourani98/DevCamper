@@ -80,8 +80,21 @@ const protect = catchAsync(async (req, res, next) => {
   }
 });
 
+// Function to Get current logged in user
+// Method: POST /api/v1/auth/me
+// Access: private
+const getMe = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.user.id);
+
+  res.status(200).json({
+    success: true,
+    data: { user },
+  });
+});
+
 module.exports = {
   register,
   login,
   protect,
+  getMe,
 };
