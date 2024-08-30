@@ -81,10 +81,9 @@ const createCourse = catchAsync(async (req, res, next) => {
   });
 });
 
-// Function to delete a bootcamp by ID
-// Method: Update /api/v1/courses/:id
+// Function to Update a course by ID
+// Method: put  /api/v1/courses/:id
 // Access: Private
-
 const updateCourse = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   console.log(id);
@@ -106,12 +105,31 @@ const updateCourse = catchAsync(async (req, res, next) => {
   });
 });
 
+// Function to Delete a course by ID
+// Method: delete /api/v1/courses/:id
+// Access: Private
+
+const deleteCourse = catchAsync(async (req, res, next) => {
+  const course = await Course.findByIdAndDelete(req.params.id);
+
+  if (!course)
+    return next(
+      new appError(`There is No course with the id of ${req.params.id}`)
+    );
+
+  res.status(204).json({
+    success: true,
+    data: null,
+  });
+});
+
 // Export all functions for use in other files
 module.exports = {
   getAllCourses,
   getSingleCourse,
   createCourse,
   updateCourse,
+  deleteCourse,
 };
 
 // Summary:
