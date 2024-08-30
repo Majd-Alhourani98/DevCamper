@@ -91,7 +91,7 @@ const updateCourse = catchAsync(async (req, res, next) => {
 
   if (!course)
     return next(
-      new appError(`There is No course with the id of ${req.params.id}`)
+      new appError(`There is No course with the id of ${req.params.id}`, 404)
     );
 
   course = await Course.findByIdAndUpdate(id, req.body, {
@@ -114,7 +114,7 @@ const deleteCourse = catchAsync(async (req, res, next) => {
 
   if (!course)
     return next(
-      new appError(`There is No course with the id of ${req.params.id}`)
+      new appError(`There is No course with the id of ${req.params.id}`, 404)
     );
 
   res.status(204).json({

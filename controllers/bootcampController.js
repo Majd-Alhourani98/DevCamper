@@ -1,4 +1,5 @@
 // Importing necessary modules and utilities
+const path = require('path');
 const Bootcamp = require('./../models/bootcampModel');
 const appError = require('./../utils/appError');
 const catchAsync = require('./../utils/catchAsync');
@@ -176,6 +177,51 @@ const getBootcampInRadius = catchAsync(async (req, res, next) => {
   });
 });
 
+// Function to upload photo for bootcamp
+// Method: Put /api/v1/bootcamps/:id/photo
+// Access: Private
+
+const bootcampPhotoUpload = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const bootcamp = await Bootcamp.findById(id);
+
+  if (!bootcamp)
+    return next(
+      new appError(`Bootcamp not found with id of ${req.params.id}`),
+      404
+    );
+
+  if (!req.files) return next(new appError(`Please upload a file`, 400));
+
+  // the uploaded image must an input name[file] to access ir via req.files.file
+  const file = req.files.file;
+  console.log(file.mimetype);
+  // check if the file is an image
+  if (!file.mimetype.startsWith('image'))
+    return next(new appError(`Please upload an image file`, 400));
+
+  // check file size
+  if (file.size > process.env.MAX_FILE_UPLOAD)
+    return next(new appError(`Please upload an image less then 1MB`, 400));
+
+  // Create custom filename
+  file.name = `photo_${bootcamp._id}${path.extname(file.name)}`;
+
+  // upload the file on the server
+  file.mv(`${process.env.FILE_UPLOAD_PATH}/${file.name}`, async err => {
+    if (err) return next(new appError(`Problem with file upload`, 500));
+
+    // insert the file name into the database
+    await Bootcamp.findByIdAndUpdate(req.params.id, { photo: file.name });
+
+    res.status(200).json({
+      success: true,
+
+      data: { file: file.name },
+    });
+  });
+});
+
 // Export all bootcamp-related functions
 module.exports = {
   getAllBootcamps,
@@ -184,6 +230,7 @@ module.exports = {
   updateBootcamp,
   deleteBootcamp,
   getBootcampInRadius,
+  bootcampPhotoUpload,
 };
 
 // Summary: This file defines a set of CRUD (Create, Read, Update, Delete) operations and additional functionalities

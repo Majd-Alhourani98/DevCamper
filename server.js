@@ -1,9 +1,11 @@
-const morgan = require('morgan');
+const path = require('path');
+
+const fileUpload = require('express-fileupload');
 const express = require('express');
+const morgan = require('morgan');
 dotenv = require('dotenv');
 
 const connectDB = require('./config/db');
-
 const errorHandler = require('./middlewares/errorHandler');
 
 // Load Environment variables
@@ -26,6 +28,13 @@ app.use(express.json());
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('tiny'));
 }
+
+// Serving static files
+app.use(express.static(path.join(__dirname, 'public')));
+
+// File uploading middleware
+app.use(fileUpload());
+
 // Mount the routers
 app.use('/api/v1/bootcamps', bootcampRouter);
 app.use('/api/v1/courses', courseRouter);

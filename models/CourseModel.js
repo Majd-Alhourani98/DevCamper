@@ -49,8 +49,6 @@ const courseSchema = new mongoose.Schema({
 // statics method, you should call it on the model Model.methodName
 courseSchema.statics.getAverageCost = async function (bootcampId) {
   // this refers to the model
-  console.log('calculating avg cost...');
-
   const stats = await this.aggregate([
     {
       $match: { bootcamp: bootcampId },
@@ -81,7 +79,6 @@ courseSchema.post('findOneAndDelete', function (doc) {
   if (doc) this.model.getAverageCost(doc.bootcamp);
 });
 
-courseSchema.post('save', function () {});
 const Course = mongoose.model('Course', courseSchema);
 
 module.exports = Course;
