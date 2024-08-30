@@ -9,7 +9,7 @@ const {
   deleteCourse,
 } = require('./../controllers/courseController');
 
-const { protect } = require('../controllers/authController');
+const { protect, authorize } = require('../controllers/authController');
 
 const queryBuilder = require('./../middlewares/queryBuilder');
 const Course = require('./../models/CourseModel');
@@ -26,6 +26,10 @@ router
   )
   .post(protect, createCourse);
 
-router.route('/:id').get(getSingleCourse).put(updateCourse).delete(deleteCourse);
+router
+  .route('/:id')
+  .get(getSingleCourse)
+  .put(updateCourse)
+  .delete(protect, authorize('publisher', 'admin'), deleteCourse);
 
 module.exports = router;

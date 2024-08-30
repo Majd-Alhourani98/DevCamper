@@ -80,6 +80,19 @@ const protect = catchAsync(async (req, res, next) => {
   }
 });
 
+// Grant access to specific roles
+
+const authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role))
+      return next(
+        new appError(`User role ${req.user.role} is not authorized to access thie route`, 403)
+      );
+
+    next();
+  };
+};
+
 // Function to Get current logged in user
 // Method: POST /api/v1/auth/me
 // Access: private
@@ -97,4 +110,8 @@ module.exports = {
   login,
   protect,
   getMe,
+  authorize,
 };
+
+// to store a token in postman
+// pm.environment.set('jwt', pm.response.json().token);

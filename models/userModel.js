@@ -12,15 +12,13 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please add an email'],
     unique: true,
-    match: [
-      /^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/,
-      'Please add a valid email',
-    ],
+    match: [/^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/, 'Please add a valid email'],
   },
 
   role: {
     type: String,
     enum: ['user', 'publisher'],
+    default: 'user',
   },
 
   password: {
