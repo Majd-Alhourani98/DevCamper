@@ -107,3 +107,6 @@ module.exports = {
   updateReview,
   deleteReview,
 };
+
+// Security:
+// 1. Logout to clear a toke

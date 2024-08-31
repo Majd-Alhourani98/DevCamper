@@ -19,7 +19,7 @@ const sendTokenResponse = (user, statusCode, res) => {
 
   if (process.env.NODE_ENV === 'production') options.secure = true;
 
-  res.status(statusCode).cookie('token', token, options).json({ success: true, token });
+  res.status(statusCode).cookie('token', token, options).json({ success: true });
 };
 
 // Function to register users
@@ -67,6 +67,8 @@ const protect = catchAsync(async (req, res, next) => {
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer'))
     token = req.headers.authorization.split(' ')[1];
   else if (req.cookies.token) token = req.cookies.token;
+
+  // token = req.cookies.token;
 
   // check if the token is exists
   if (!token) return next(new appError('Not authorize to access thie route', 401));
@@ -200,6 +202,20 @@ const updatePassword = catchAsync(async (req, res, next) => {
   sendTokenResponse(user, 200, res);
 });
 
+// Function to log user out / clear cookie
+// Method: POST /api/v1/auth/logout
+// Access: private
+const logout = catchAsync(async (req, res, next) => {
+  res.cookie('token', 'none', {
+    httpOnly: true,
+  });
+
+  res.status(200).json({
+    success: true,
+    data: {},
+  });
+});
+
 module.exports = {
   register,
   login,
@@ -210,6 +226,7 @@ module.exports = {
   resetPassword,
   updateData,
   updatePassword,
+  logout,
 };
 
 // to store a token in postman
