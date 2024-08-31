@@ -40,6 +40,39 @@ const reviewSchema = new mongoose.Schema({
 // prevent dupliacte review
 reviewSchema.index({ bootcamp: 1, user: 1 }, { unique: true });
 
+// statics method, you should call it on the model Model.methodName
+reviewSchema.statics.getAverageRating = async function (bootcampId) {
+  // this refers to the model
+  const stats = await this.aggregate([
+    {
+      $match: { bootcamp: bootcampId },
+    },
+
+    {
+      $group: {
+        _id: '$bootcamp',
+        averageRating: { $avg: '$rating' },
+      },
+    },
+  ]);
+
+  try {
+    await this.model('Bootcamp').findByIdAndUpdate(bootcampId, {
+      averageRating: stats[0].averageRating,
+    });
+  } catch (err) {}
+};
+
+// Call getAverageCost after save
+reviewSchema.post('save', function () {
+  this.constructor.getAverageRating(this.bootcamp);
+});
+
+// call getAverageCose before remove
+reviewSchema.post('findOneAndDelete', function (doc) {
+  if (doc) this.model.getAverageRating(doc.bootcamp);
+});
+
 const Review = mongoose.model('review', reviewSchema);
 
 module.exports = Review;
