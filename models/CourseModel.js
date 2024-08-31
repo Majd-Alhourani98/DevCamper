@@ -44,6 +44,12 @@ const courseSchema = new mongoose.Schema({
     ref: 'Bootcamp',
     required: true,
   },
+
+  user: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+    required: true,
+  },
 });
 
 // statics method, you should call it on the model Model.methodName

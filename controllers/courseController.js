@@ -31,8 +31,7 @@ const getSingleCourse = catchAsync(async (req, res, next) => {
   const course = await Course.findById(id);
 
   // If course not found, return an error
-  if (!course)
-    return next(new appError(`No course found with the ID of ${id}`, 404));
+  if (!course) return next(new appError(`No course found with the ID of ${id}`, 404));
 
   // Send response with the fetched course
   res.status(200).json({
@@ -45,18 +44,23 @@ const getSingleCourse = catchAsync(async (req, res, next) => {
 // Method: POST /api/v1/bootcamps/:bootcampId/courses
 // Access: Private
 const createCourse = catchAsync(async (req, res, next) => {
-  const { bootcampId } = req.params; // Extract bootcamp ID from request params
+  req.body.bootcamp = req.params.bootcampId; // Extract bootcamp ID from request params
+  req.body.user = req.user._id;
 
   // Check if the bootcamp exists in the database
-  const bootcamp = await Bootcamp.findById(bootcampId);
+  const bootcamp = await Bootcamp.findById(req.params.bootcampId);
 
   // If bootcamp not found, return an error
-  if (!bootcamp)
-    return next(
-      new appError(`No bootcamp found with the ID of ${bootcampId}`, 404)
-    );
+  if (!bootcamp) return next(new appError(`No bootcamp found with the ID of ${bootcampId}`, 404));
 
-  req.body.bootcamp = bootcampId; // Set bootcamp ID in the course data
+  // Make sure owner of the bootcamp or admin can add a course
+  if (bootcamp.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    return next(
+      new appError(
+        `User ${req.user._id} is not authorized to add a course to bootcamp ${bootcamp._id}`
+      )
+    );
+  }
 
   const course = await Course.create(req.body); // Create a new course
 
@@ -72,13 +76,16 @@ const createCourse = catchAsync(async (req, res, next) => {
 // Access: Private
 const updateCourse = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  console.log(id);
   let course = await Course.findById(id);
 
-  if (!course)
+  if (!course) return next(new appError(`There is No course with the id of ${req.params.id}`, 404));
+
+  // Make sure user is course owner
+  if (course.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
     return next(
-      new appError(`There is No course with the id of ${req.params.id}`, 404)
+      new appError(`User ${req.user._id} is not authorized to update course ${course._id}`)
     );
+  }
 
   course = await Course.findByIdAndUpdate(id, req.body, {
     new: true,
@@ -96,13 +103,18 @@ const updateCourse = catchAsync(async (req, res, next) => {
 // Access: Private
 
 const deleteCourse = catchAsync(async (req, res, next) => {
-  const course = await Course.findByIdAndDelete(req.params.id);
+  let course = await Course.findById(req.params.id);
 
-  if (!course)
+  if (!course) return next(new appError(`There is No course with the id of ${req.params.id}`, 404));
+
+  // Make sure user is course owner
+  if (course.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
     return next(
-      new appError(`There is No course with the id of ${req.params.id}`, 404)
+      new appError(`User ${req.user._id} is not authorized to delete course ${course._id}`)
     );
+  }
 
+  course = await Course.findByIdAndDelete(req.params.id);
   res.status(204).json({
     success: true,
     data: null,
