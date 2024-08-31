@@ -164,6 +164,26 @@ const getMe = catchAsync(async (req, res, next) => {
   });
 });
 
+// Function to Update user data
+// Method: Put /api/v1/auth/update-data
+// Access: private
+const updateData = catchAsync(async (req, res, next) => {
+  const fieldsToUpdate = {
+    name: req.body.name,
+    email: req.body.email,
+  };
+
+  const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
+    new: true,
+    runValidators: true,
+  });
+
+  res.status(200).json({
+    success: true,
+    data: { user },
+  });
+});
+
 module.exports = {
   register,
   login,
@@ -172,6 +192,7 @@ module.exports = {
   authorize,
   forgetPassword,
   resetPassword,
+  updateData,
 };
 
 // to store a token in postman
