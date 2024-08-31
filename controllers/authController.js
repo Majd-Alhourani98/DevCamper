@@ -1,9 +1,26 @@
+const { promisify } = require('util');
+const crypto = require('crypto');
+
 const User = require('./../models/userModel');
 const appError = require('./../utils/appError');
 const sendEmail = require('./../utils/sendEmail');
 const catchAsync = require('./../utils/catchAsync');
 const jwt = require('jsonwebtoken');
-const { promisify } = require('util');
+
+const sendTokenResponse = (user, statusCode, res) => {
+  // Create Token
+  const token = user.signToken();
+
+  const options = {
+    expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000),
+
+    httpOnly: true,
+  };
+
+  if (process.env.NODE_ENV === 'production') options.secure = true;
+
+  res.status(statusCode).cookie('token', token, options).json({ success: true, token });
+};
 
 // Function to register users
 // Method: POST /api/v1/auth/register
@@ -43,21 +60,6 @@ const login = catchAsync(async (req, res, next) => {
 
   sendTokenResponse(user, 200, res);
 });
-
-const sendTokenResponse = (user, statusCode, res) => {
-  // Create Token
-  const token = user.signToken();
-
-  const options = {
-    expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000),
-
-    httpOnly: true,
-  };
-
-  if (process.env.NODE_ENV === 'production') options.secure = true;
-
-  res.status(statusCode).cookie('token', token, options).json({ success: true, token });
-};
 
 // PROTECT ROUTE MIDDLEWARE: you can store it in middlewae folder
 const protect = catchAsync(async (req, res, next) => {
@@ -114,6 +116,30 @@ const forgetPassword = catchAsync(async (req, res, next) => {
   }
 });
 
+// Function to rest password
+// Method: PUT /api/v1/auth/reset-password/:token
+// Access: public
+const resetPassword = catchAsync(async (req, res, next) => {
+  console.log(req.params.token);
+  // get hashed token
+  const resetPasswordToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+
+  const user = await User.findOne({
+    resetPasswordToken,
+    resetPasswordExpire: { $gte: Date.now() },
+  });
+
+  if (!user) next(new appError('Invalid token', 400));
+
+  // Set new password
+  user.password = req.body.password;
+  user.resetPasswordExpire = undefined;
+  user.resetPasswordToken = undefined;
+  await user.save();
+
+  sendTokenResponse(user, 200, res);
+});
+
 // Grant access to specific roles
 const authorize = (...roles) => {
   return (req, res, next) => {
@@ -145,6 +171,7 @@ module.exports = {
   getMe,
   authorize,
   forgetPassword,
+  resetPassword,
 };
 
 // to store a token in postman

@@ -22,7 +22,7 @@ const sendEmail = async options => {
 
   const info = await transporter.sendMail(mailOptions);
 
-  console.log('message sent: $s', info);
+  // console.log('message sent: $s', info);
 };
 
 module.exports = sendEmail;
