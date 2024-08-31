@@ -6,6 +6,14 @@ const express = require('express');
 const morgan = require('morgan');
 dotenv = require('dotenv');
 
+// Securtiy packges
+const mongoSanitize = require('express-mongo-sanitize');
+const helmet = require('helmet');
+const xss = require('xss-clean');
+const rateLimiter = require('express-rate-limit');
+const hpp = require('hpp');
+const cors = require('cors');
+
 // Load Environment variables
 dotenv.config({ path: './config/config.env' });
 
@@ -41,6 +49,29 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // File uploading middleware
 app.use(fileUpload());
+
+// Sanitize Data
+app.use(mongoSanitize());
+
+// Set security headers
+app.use(helmet());
+
+// Prevent XSS attacks
+app.use(xss());
+
+// Enable CORS
+app.use(cors());
+
+// Rate limiting
+const limiter = rateLimiter({
+  windowMs: 10 * 60 * 10000,
+  max: 2,
+});
+
+app.use(limiter);
+
+// Prevent HTTP param polution
+app.use(hpp());
 
 // Mount the routers
 app.use('/api/v1/bootcamps', bootcampRouter);
