@@ -69,7 +69,7 @@ reviewSchema.post('save', function () {
 });
 
 // call getAverageCose before remove
-reviewSchema.post('findOneAndDelete', function (doc) {
+reviewSchema.post(/^findOneAnd/, function (doc) {
   if (doc) this.model.getAverageRating(doc.bootcamp);
 });
 

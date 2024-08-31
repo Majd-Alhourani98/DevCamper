@@ -72,9 +72,31 @@ const updateReview = catchAsync(async (req, res, next) => {
     runValidators: true,
   });
 
-  res.status(201).json({
+  res.status(200).json({
     success: true,
     data: review,
+  });
+});
+
+// Function to delete a review
+// Method: DELETE /api/v1/reviews/:id
+// Access: private
+const deleteReview = catchAsync(async (req, res, next) => {
+  const review = await Review.findById(req.params.id);
+
+  if (!review) return next(new appError(`No review with the id of ${req.params.id}`));
+
+  if (review.user.toString() !== req.user._id.toString() && req.user.role !== 'admin')
+    return next(new appError(`Not authorized to delete review`, 401));
+
+  await Review.findByIdAndDelete(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+  });
+
+  res.status(204).json({
+    success: true,
+    data: null,
   });
 });
 
@@ -83,4 +105,5 @@ module.exports = {
   getReview,
   createReview,
   updateReview,
+  deleteReview,
 };

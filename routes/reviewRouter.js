@@ -6,6 +6,7 @@ const {
   getReview,
   createReview,
   updateReview,
+  deleteReview,
 } = require('../controllers/reviewController');
 const { protect, authorize } = require('./../controllers/authController');
 
@@ -18,6 +19,10 @@ router
   .get(queryBuilder(Review, { path: 'bootcamp', select: 'name description' }), getAllReviews)
   .post(protect, authorize('user'), createReview);
 
-router.route('/:id').get(getReview).put(protect, authorize('user'), updateReview);
+router
+  .route('/:id')
+  .get(getReview)
+  .put(protect, authorize('user'), updateReview)
+  .delete(protect, authorize('user'), deleteReview);
 
 module.exports = router;

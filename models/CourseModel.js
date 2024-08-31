@@ -81,7 +81,7 @@ courseSchema.post('save', function () {
 });
 
 // call getAverageCose before remove
-courseSchema.post('findOneAndDelete', function (doc) {
+courseSchema.post(/^findOneAnd/, function (doc) {
   if (doc) this.model.getAverageCost(doc.bootcamp);
 });
 
