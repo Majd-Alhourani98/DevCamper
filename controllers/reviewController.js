@@ -38,6 +38,7 @@ const getReview = catchAsync(async (req, res, next) => {
   });
 });
 
+<<<<<<< HEAD
 // Function to create a review
 // Method: POST /api/v1/bootcamps/:id/reviews
 // Access: private
@@ -60,4 +61,8 @@ module.exports = {
   getAllReviews,
   getReview,
   createReview,
+
+module.exports = {
+  getAllReviews,
+  getReview,
 };
