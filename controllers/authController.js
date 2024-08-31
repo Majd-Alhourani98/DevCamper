@@ -33,9 +33,9 @@ const register = catchAsync(async (req, res, next) => {
     name,
     email,
     password,
-    role,
   });
 
+  user.password = undefined;
   // Create Token
   sendTokenResponse(user, 200, res);
 });
@@ -184,6 +184,22 @@ const updateData = catchAsync(async (req, res, next) => {
   });
 });
 
+// Function to Update users's password
+// Method: Put /api/v1/auth/update-password
+// Access: private
+const updatePassword = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.user.id).select('+password');
+
+  // Check current Passowrd
+  if (!(await user.isCorrectPassword(req.body.currentPassword)))
+    return next(new appError('Password is incorrect', 401));
+
+  user.password = req.body.newPassword;
+  await user.save();
+
+  sendTokenResponse(user, 200, res);
+});
+
 module.exports = {
   register,
   login,
@@ -193,6 +209,7 @@ module.exports = {
   forgetPassword,
   resetPassword,
   updateData,
+  updatePassword,
 };
 
 // to store a token in postman
