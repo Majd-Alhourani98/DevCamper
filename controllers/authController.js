@@ -1,5 +1,6 @@
 const User = require('./../models/userModel');
 const appError = require('./../utils/appError');
+const sendEmail = require('./../utils/sendEmail');
 const catchAsync = require('./../utils/catchAsync');
 const jwt = require('jsonwebtoken');
 const { promisify } = require('util');
@@ -79,8 +80,41 @@ const protect = catchAsync(async (req, res, next) => {
   }
 });
 
-// Grant access to specific roles
+// Function to Forget password
+// Method: POST /api/v1/auth/forget-password
+// Access: public
+const forgetPassword = catchAsync(async (req, res, next) => {
+  const user = await User.findOne({ email: req.body.email });
 
+  if (!user) return new appError('There is no user with that email', 404);
+
+  // Get reset Token
+  const resetToken = user.getResetPasswordToken();
+
+  await user.save({ validateBeforeSave: false });
+
+  // Create reset url
+  const resetUrl = `${req.protocol}://${req.get('host')}/api/v1/reset-password/${resetToken}`;
+  const message = `You are receiving this email becuase you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: 'Password reset token',
+      message,
+    });
+
+    return res.status(200).json({ success: true, message: 'Email sent' });
+  } catch (err) {
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save({ validateBeforeSave: false });
+    console.log(err);
+    return next(new appError('Email could not be send', 500));
+  }
+});
+
+// Grant access to specific roles
 const authorize = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role))
@@ -110,6 +144,7 @@ module.exports = {
   protect,
   getMe,
   authorize,
+  forgetPassword,
 };
 
 // to store a token in postman
