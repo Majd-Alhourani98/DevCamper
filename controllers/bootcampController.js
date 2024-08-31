@@ -20,10 +20,7 @@ const getSingleBootcamp = catchAsync(async (req, res, next) => {
   const bootcamp = await Bootcamp.findById(id);
 
   // If bootcamp is not found, return error
-  if (!bootcamp)
-    return next(
-      new appError(`Bootcamp not found with id of ${req.params.id}`, 404)
-    );
+  if (!bootcamp) return next(new appError(`Bootcamp not found with id of ${req.params.id}`, 404));
 
   res.status(200).json({
     success: true,
@@ -35,6 +32,20 @@ const getSingleBootcamp = catchAsync(async (req, res, next) => {
 // Method: POST /api/v1/bootcamps
 // Access: Private
 const createBootcamp = catchAsync(async (req, res, next) => {
+  // Add user to req.body
+  req.body.user = req.user._id;
+
+  console.log(req.user._id);
+  // Check for published bootcamp
+  const publishedBootcamp = await Bootcamp.findOne({ user: req.user.id });
+
+  // if the user is not admin, the can only add one bootcamp
+  if (publishedBootcamp && req.user.role !== 'admin') {
+    return next(
+      new appError(`The user with ID ${req.user._id} has already published a bootcamp`, 400)
+    );
+  }
+
   const bootcamp = await Bootcamp.create(req.body);
 
   res.status(201).json({
@@ -54,10 +65,7 @@ const updateBootcamp = catchAsync(async (req, res, next) => {
   });
 
   // If bootcamp is not found, return error
-  if (!bootcamp)
-    return next(
-      new appError(`Bootcamp not found with id of ${req.params.id}`, 404)
-    );
+  if (!bootcamp) return next(new appError(`Bootcamp not found with id of ${req.params.id}`, 404));
 
   res.status(201).json({
     success: true,
@@ -73,10 +81,7 @@ const deleteBootcamp = catchAsync(async (req, res, next) => {
   const bootcamp = await Bootcamp.findByIdAndDelete(id);
 
   // If bootcamp is not found, return error
-  if (!bootcamp)
-    return next(
-      new appError(`Bootcamp not found with id of ${req.params.id}`, 404)
-    );
+  if (!bootcamp) return next(new appError(`Bootcamp not found with id of ${req.params.id}`, 404));
 
   res.status(204).json({
     success: true,
@@ -119,11 +124,7 @@ const bootcampPhotoUpload = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const bootcamp = await Bootcamp.findById(id);
 
-  if (!bootcamp)
-    return next(
-      new appError(`Bootcamp not found with id of ${req.params.id}`),
-      404
-    );
+  if (!bootcamp) return next(new appError(`Bootcamp not found with id of ${req.params.id}`), 404);
 
   if (!req.files) return next(new appError(`Please upload a file`, 400));
 

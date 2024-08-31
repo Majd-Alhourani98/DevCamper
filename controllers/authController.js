@@ -70,9 +70,8 @@ const protect = catchAsync(async (req, res, next) => {
 
   // verify token
   try {
-    const docoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-
-    req.user = await User.findById(docoded.id);
+    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+    req.user = await User.findById(decoded.id);
     next();
   } catch (err) {
     console.log(err);

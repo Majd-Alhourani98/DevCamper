@@ -9,6 +9,8 @@ const {
   bootcampPhotoUpload,
 } = require('./../controllers/bootcampController');
 
+const { protect, authorize } = require('./../controllers/authController');
+
 const queryBuilder = require('./../middlewares/queryBuilder');
 const Bootcamp = require('../models/bootcampModel');
 
@@ -26,13 +28,9 @@ router.route('/:id/photo').put(bootcampPhotoUpload);
 router
   .route('/')
   .get(queryBuilder(Bootcamp, 'courses'), getAllBootcamps)
-  .post(createBootcamp);
+  .post(protect, authorize('publisher', 'admin'), createBootcamp);
 
-router
-  .route('/:id')
-  .get(getSingleBootcamp)
-  .put(updateBootcamp)
-  .delete(deleteBootcamp);
+router.route('/:id').get(getSingleBootcamp).put(updateBootcamp).delete(deleteBootcamp);
 
 module.exports = router;
 
