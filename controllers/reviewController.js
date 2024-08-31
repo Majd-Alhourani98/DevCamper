@@ -56,8 +56,31 @@ const createReview = catchAsync(async (req, res, next) => {
   });
 });
 
+// Function to update a review
+// Method: PUT /api/v1/reviews/:id
+// Access: private
+const updateReview = catchAsync(async (req, res, next) => {
+  let review = await Review.findById(req.params.id);
+
+  if (!review) return next(new appError(`No review with the id of ${req.params.id}`));
+
+  if (review.user.toString() !== req.user._id.toString() && req.user.role !== 'admin')
+    return next(new appError(`Not authorized to update review`, 401));
+
+  review = await Review.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+  });
+
+  res.status(201).json({
+    success: true,
+    data: review,
+  });
+});
+
 module.exports = {
   getAllReviews,
   getReview,
   createReview,
+  updateReview,
 };
