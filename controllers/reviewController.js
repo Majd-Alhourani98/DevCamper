@@ -2,7 +2,7 @@
 const Review = require('./../models/reviewModel'); // Course model
 const appError = require('./../utils/appError'); // Custom error handling
 const catchAsync = require('./../utils/catchAsync'); // Async error handling utility
-
+const Bootcamp = require('./../models/bootcampModel');
 // Function to get all reviews
 // Method: GET /api/v1/reviews or /api/v1/bootcamps/:bootcampId/reviews
 // Access: Public
@@ -45,7 +45,7 @@ const createReview = catchAsync(async (req, res, next) => {
   req.body.bootcamp = req.params.bootcampId;
   req.body.user = req.user._id;
 
-  const bootcamp = await Bootcamp.findById(req.params.id);
+  const bootcamp = await Bootcamp.findById(req.params.bootcampId);
   if (!bootcamp) return next(new appError(`No bootcamp with the id of ${req.params.bootcampId}`));
 
   const review = await Review.create(req.body);
