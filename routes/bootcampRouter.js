@@ -30,7 +30,11 @@ router
   .get(queryBuilder(Bootcamp, 'courses'), getAllBootcamps)
   .post(protect, authorize('publisher', 'admin'), createBootcamp);
 
-router.route('/:id').get(getSingleBootcamp).put(updateBootcamp).delete(deleteBootcamp);
+router
+  .route('/:id')
+  .get(getSingleBootcamp)
+  .put(protect, authorize('publisher', 'admin'), updateBootcamp)
+  .delete(protect, authorize('publisher', 'admin'), deleteBootcamp);
 
 module.exports = router;
 

@@ -58,15 +58,24 @@ const createBootcamp = catchAsync(async (req, res, next) => {
 // Method: PUT /api/v1/bootcamps/:id
 // Access: Private
 const updateBootcamp = catchAsync(async (req, res, next) => {
+  // Find the bootcamp
   const { id } = req.params;
-  const bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-  });
+  let bootcamp = await Bootcamp.findById(req.params.id);
 
   // If bootcamp is not found, return error
   if (!bootcamp) return next(new appError(`Bootcamp not found with id of ${req.params.id}`, 404));
 
+  // Make sure user is bootcamp owener
+  if (bootcamp.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    return next(new appError(`User ${req.user._id} is not authorized to update thie bootcamp`));
+  }
+
+  bootcamp = await Bootcamp.findByIdAndUpdate(id, req.body, {
+    new: true,
+    runValidators: true,
+  });
+
+  // send a response
   res.status(201).json({
     success: true,
     data: { bootcamp },
@@ -77,11 +86,20 @@ const updateBootcamp = catchAsync(async (req, res, next) => {
 // Method: DELETE /api/v1/bootcamps/:id
 // Access: Private
 const deleteBootcamp = catchAsync(async (req, res, next) => {
+  // Find the Bootcamp
   const { id } = req.params;
-  const bootcamp = await Bootcamp.findByIdAndDelete(id);
+  let bootcamp = await Bootcamp.findById(id);
 
   // If bootcamp is not found, return error
   if (!bootcamp) return next(new appError(`Bootcamp not found with id of ${req.params.id}`, 404));
+
+  // Make sure user is bootcamp owener
+  if (bootcamp.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    return next(new appError(`User ${req.user._id} is not authorized to update thie bootcamp`));
+  }
+
+  // delete the bootcamp
+  await Bootcamp.findByIdAndDelete(id);
 
   res.status(204).json({
     success: true,
