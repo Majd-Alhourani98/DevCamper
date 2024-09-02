@@ -228,16 +228,3 @@ module.exports = {
   updatePassword,
   logout,
 };
-
-// to store a token in postman
-// pm.environment.set('jwt', pm.response.json().token);
-// Note: when you enable the athorization in postman it will send the jwt via postman
-
-// Security:
-// 1. Logout to clear a toke
-// 2. Prevent NoSQL injection => express-mongo-sanitize
-// 3. XSS Protetion security header ==> xss-clean
-// 4. Security Headers ==> helmet
-// 5. Rate limiting ==> npm i express-rate-limit
-// 6. HPP (headers paramter poulltion) ==> hpp
-// 7. CORS

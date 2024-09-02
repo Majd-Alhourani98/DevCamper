@@ -185,15 +185,3 @@ module.exports = {
   getBootcampInRadius,
   bootcampPhotoUpload,
 };
-
-// Summary: This file defines a set of CRUD (Create, Read, Update, Delete) operations and additional functionalities
-// for managing bootcamps in a RESTful API. The operations include retrieving all bootcamps with filtering, sorting,
-// and pagination options, fetching a single bootcamp by ID, creating a new bootcamp, updating an existing bootcamp,
-// and deleting a bootcamp. Additionally, it includes a function to find bootcamps within a specific geographic radius
-// based on a provided zipcode and distance.
-
-// Takeaway Note:
-// 1. Use of `catchAsync` for handling asynchronous functions and reducing repetitive try-catch blocks.
-// 2. Use of `appError` utility for consistent error handling across routes.
-// 3. Advanced filtering, sorting, selecting fields, and pagination techniques are implemented using Mongoose queries.
-// 4. Use of geocoding to calculate bootcamps within a certain radius demonstrates integration with third-party APIs.
